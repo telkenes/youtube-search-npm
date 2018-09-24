@@ -1,0 +1,30 @@
+{
+  "name": "youtube-search-npm",
+  "version": "1.0.0",
+  "description": "simple and easy to use youtube search module",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/telkenes/youtube-search-npm.git"
+  },
+  "keywords": [
+    "youtube",
+    "search"
+  ],
+  "author": "Telk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/telkenes/youtube-search-npm/issues"
+  },
+  "homepage": "https://github.com/telkenes/youtube-search-npm#readme",
+  "dependencies": {
+    "request": "*",
+    "xhr": "*"
+  }
+}
