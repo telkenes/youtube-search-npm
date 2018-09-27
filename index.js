@@ -49,7 +49,7 @@ class youtubesearch {
                     return {
                       kind: item.kind,
                       channelId: item.id,
-                      link: {default: 'https://www.youtube.com/channel/' + item.id, custom: 'https://www.youtube.com/channel/' + item.snippet.customUrl},
+                      link: {default: 'https://www.youtube.com/channel/' + item.id, custom: 'https://www.youtube.com/' + item.snippet.customUrl},
                       publishedAt: item.snippet.publishedAt,
                       channelTitle: item.snippet.title,
                       channelDescription: item.snippet.description,
@@ -443,7 +443,7 @@ function getChannel(key, opts) {
           return {
             kind: item.kind,
             channelId: item.id,
-            link: {default: 'https://www.youtube.com/channel/' + item.id, custom: 'https://www.youtube.com/channel/' + item.snippet.customUrl},
+            link: {default: 'https://www.youtube.com/channel/' + item.id, custom: 'https://www.youtube.com/' + item.snippet.customUrl},
             publishedAt: item.snippet.publishedAt,
             channelTitle: item.snippet.title,
             channelDescription: item.snippet.description,
