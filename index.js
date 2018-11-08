@@ -1,132 +1,12 @@
+//16 kb
 let querystring = require('querystring')
-let xhr = require('xhr')
-
-if (!xhr.open) xhr = require('request')
+let phin = require('phin')
 
 class youtubesearch {
     constructor (key) {
         if (typeof key !== 'string') throw new Error('The YouTube API key you provided was not a string.');
 
         this.key = key;
-    }
-         channel(opts) {
-            //channel properties
-            var allowed= ['id', 'forUsername', 'username', 'categoryId', 'key']
-            return new Promise((resolve, reject) => {
-              if (typeof opts === 'function') {
-                opts = {}
-              }
-              opts.key = this.key
-              opts.forUsername = opts.username || options.forUsername || ''
-              let params = {
-                //q: term,
-                part: opts.part || 'snippet,contentDetails,statistics',
-                maxResults: opts.maxResults || 10
-              }
-
-              Object.keys(opts).map(function (k) {
-                if (allowed.indexOf(k) > -1) {
-                    params[k] = opts[k]
-                }
-
-              })
-
-              xhr({
-                url: 'https://www.googleapis.com/youtube/v3/channels?' + querystring.stringify(params),
-                method: 'GET'
-              }, function (err, res, body) {
-                if (err) throw err
-
-                try {
-                  let result = JSON.parse(body)
-                  if (result.error) {
-                    let error = new Error(result.error.errors.shift().message)
-                    throw error
-                  }
-
-
-                  let findings = result.items.map(function (item) {
-                    return {
-                      kind: item.kind,
-                      channelId: item.id,
-                      link: {default: 'https://www.youtube.com/channel/' + item.id, custom: 'https://www.youtube.com/' + item.snippet.customUrl},
-                      publishedAt: item.snippet.publishedAt,
-                      channelTitle: item.snippet.title,
-                      channelDescription: item.snippet.description,
-                      country: item.snippet.country,
-                      statistics: item.statistics,
-                      contentDetails: item.contentDetails
-                    }
-                  })
-
-                  resolve(findings)
-                } catch (error) {
-                  reject(error)
-                }
-              })
-            })
-    }
-
-    playlist(opts) {
-        //playlist properties
-        var allowedprop = ['id', 'channelId', 'key']
-        return new Promise(async (resolve, reject) => {
-          if (typeof opts === 'function') {
-            opts = {}
-          }
-          opts.key = this.key
-          let params = {
-            part: opts.part || 'snippet,contentDetails',
-            maxResults: opts.maxResults || 10
-          }
-
-          Object.keys(opts).map(function (k) {
-            if (allowedprop.indexOf(k) > -1) {
-                params[k] = opts[k]
-            }
-
-          })
-          var key = this.key
-
-          xhr({
-            url: 'https://www.googleapis.com/youtube/v3/playlists?' + querystring.stringify(params),
-            method: 'GET'
-          }, async (err, res, body) => {
-            if (err) throw err
-
-            try {
-              let result = JSON.parse(body)
-              if (result.error) {
-                let error = new Error(result.error.errors.shift().message)
-                throw error
-              }
-              let findings = [];
-              var index = 0;
-              result.items.forEach(async (item) => {
-                getVids(key, {playlistId: item.id}).then(vids => {
-                  index++;
-                findings.push({
-                  kind: item.kind,
-                  id: item.id,
-                  link: 'https://www.youtube.com/playlist?list=' + item.id,
-                  title: item.snippet.title,
-                  description: item.snippet.description,
-                  thumbnails: item.snippet.thumbnails,
-                  channelTitle: item.snippet.channelTitle,
-                  channelId: item.snippet.channelId,
-                  publishedAt: item.snippet.publishedAt,
-                  itemCount: item.contentDetails.itemCount,
-                  items: vids
-                })
-                if (index === result.items.length) return resolve(findings)
-              })
-              })
-
-            } catch (error) {
-              reject(error)
-            }
-          })
-        })
     }
 
      search(term, opts) {
@@ -162,10 +42,8 @@ class youtubesearch {
         'videoType',
         'key'
       ]
-        return new Promise((resolve, reject) => {
-          if (typeof opts === 'function') {
-            opts = {}
-          }
+        return new Promise(async (resolve, reject) => {
+          if (!term || term === '' || typeof term !== 'string') return reject('The term you provided was not valid')
           if (!opts) opts = {}
           opts.key = this.key
           let params = {
@@ -178,12 +56,8 @@ class youtubesearch {
             if (allowedProperties.indexOf(k) > -1) params[k] = opts[k]
           })
           var key = this.key
-          xhr({
-            url: 'https://www.googleapis.com/youtube/v3/search?' + querystring.stringify(params),
-            method: 'GET'
-          }, function (err, res, body) {
-            if (err) throw err
-
+          phin('https://www.googleapis.com/youtube/v3/search?' + querystring.stringify(params)).then(res => {
+            let body = res.body
             try {
               let result = JSON.parse(body)
 
@@ -254,69 +128,14 @@ class youtubesearch {
             } catch (error) {
               reject(error)
             }
-          })
+          }).catch(e => reject(e))
         })
       }
-      playlistVids(opts) {
-        return new Promise((resolve, reject) => {
-            if (typeof opts === 'function') {
-              opts = {}
-            }
-            opts.key = this.key
-            let params = {
-              part: opts.part || 'snippet',
-              maxResults: opts.maxResults || 30
-            }
-
-            Object.keys(opts).map(function (k) {
-                  params[k] = opts[k]
-
-            })
-
-            xhr({
-              url: 'https://www.googleapis.com/youtube/v3/playlistItems?' + querystring.stringify(params),
-              method: 'GET'
-            }, function (err, res, body) {
-              if (err) throw err
-
-              try {
-                let result = JSON.parse(body)
-                if (result.error) {
-                  let error = new Error(result.error.errors.shift().message)
-                  throw error
-                }
-                let findings = result.items.map((item) => {
-                    return {
-                      kind: item.kind,
-                      id: item.snippet.resourceId.videoId,
-                      link: 'https://www.youtube.com/watch?v=' + item.snippet.resourceId.videoId,
-                      title: item.snippet.title,
-                      description: item.snippet.description,
-                      thumbnails: item.snippet.thumbnails,
-                      channelTitle: item.snippet.channelTitle,
-                      channelId: item.snippet.channelId,
-                      publishedAt: item.snippet.publishedAt,
-                      position: item.snippet.position,
-
-                                    }
-                  })
-
-                resolve(findings)
-              } catch (error) {
-                reject(error)
-              }
-            })
-          })
-    }
-
 }
 module.exports = youtubesearch
 
 function getVid(key, opts) {
-        return new Promise((resolve, reject) => {
-            if (typeof opts === 'function') {
-              opts = {}
-            }
+        return new Promise(async (resolve, reject) => {
             opts.key = key
             let params = {
               part: opts.part || 'snippet,contentDetails,statistics',
@@ -325,16 +144,11 @@ function getVid(key, opts) {
 
             Object.keys(opts).map(function (k) {
                   params[k] = opts[k]
-
             })
 
-            xhr({
-              url: 'https://www.googleapis.com/youtube/v3/videos?' + querystring.stringify(params),
-              method: 'GET'
-            }, function (err, res, body) {
-              if (err) throw err
-
+            phin('https://www.googleapis.com/youtube/v3/videos?' + querystring.stringify(params)).then(async (res) => {
               try {
+                let body = res.body
                 let result = JSON.parse(body)
                 if (result.error) {
                   let error = new Error(result.error.errors.shift().message)
@@ -354,7 +168,7 @@ function getVid(key, opts) {
               } catch (error) {
                 reject(error)
               }
-            })
+            }).catch(e => reject(err))
           })
 
 }
@@ -377,13 +191,9 @@ function getVids(key, opts) {
 
     })
 
-    xhr({
-      url: 'https://www.googleapis.com/youtube/v3/playlistItems?' + querystring.stringify(params),
-      method: 'GET'
-    }, function (err, res, body) {
-      if (err) throw err
-
+    phin('https://www.googleapis.com/youtube/v3/playlistItems?' + querystring.stringify(params)).then(res => {
       try {
+      let body = res.body
         let result = JSON.parse(body)
         if (result.error) {
           let error = new Error(result.error.errors.shift().message)
@@ -427,13 +237,9 @@ function getChannel(key, opts) {
           params[k] = opts[k]
     })
 
-    xhr({
-      url: 'https://www.googleapis.com/youtube/v3/channels?' + querystring.stringify(params),
-      method: 'GET'
-    }, function (err, res, body) {
-      if (err) throw err
-
+    phin('https://www.googleapis.com/youtube/v3/channels?' + querystring.stringify(params)).then(res => {
       try {
+      let body = res.body
         let result = JSON.parse(body)
         if (result.error) {
           let error = new Error(result.error.errors.shift().message)
@@ -460,6 +266,7 @@ function getChannel(key, opts) {
     })
   })
 }
+
 
 function converttime(time) {
 var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
