@@ -1,4 +1,3 @@
-//16 kb
 let querystring = require('querystring')
 let phin = require('phin')
 
