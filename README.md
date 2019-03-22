@@ -15,10 +15,15 @@ const ytsearch = new youtubesearch('ur yt api key kthx')
 ytsearch.search('youtube').then(r => {
   console.log(r)
 })
+
+
+//search a video
+ytsearch.search('youtube', {'type': 'video'}).then(r => {
+  console.log(r)
+})
+
+//search a channel
+ytsearch.search('youtube', {'type': 'channel'}).then(r => {
+  console.log(r)
+})
 ```
-
-
-
-__Extra Information__
-* by telk
-* this package uses promises
